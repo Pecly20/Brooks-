@@ -1,0 +1,159 @@
+> View(var_reverse)
+> View(varmodel)
+> View(vd)
+> View(vd_reverse)
+> View(var)
+> library(readxl)
+> currencies <- read_excel("D:/Programming Guide/data/currencies.xls")
+Erro: `path` does not exist: ‘D:/Programming Guide/data/currencies.xls’
+> library(readxl)
+> currencies <- read_excel("C:/Users/MARCELO/Desktop/currencies.xls")
+> View(currencies)
+> currencies$reur = c(NA,100*diff(log(currencies$EUR)))
+> currencies$rgbp = c(NA,100*diff(log(currencies$GBP)))
+> currencies$rjpy = c(NA,100*diff(log(currencies$JPY)))
+> currencies = currencies[-1,]
+> installed.packages("vars")
+     Package LibPath Version Priority Depends Imports LinkingTo Suggests Enhances License
+     License_is_FOSS License_restricts_use OS_type Archs MD5sum NeedsCompilation Built
+> library(vars)
+> VAR(currencies[c("reur","rgbp","rjpy")],p = 2)
+
+VAR Estimation Results:
+======================= 
+
+Estimated coefficients for equation reur: 
+========================================= 
+Call:
+reur = reur.l1 + rgbp.l1 + rjpy.l1 + reur.l2 + rgbp.l2 + rjpy.l2 + const 
+
+      reur.l1       rgbp.l1       rjpy.l1       reur.l2       rgbp.l2       rjpy.l2         const 
+ 0.1474965506 -0.0183557359 -0.0070978299 -0.0118082131  0.0066228786 -0.0054272893  0.0001368541 
+
+
+Estimated coefficients for equation rgbp: 
+========================================= 
+Call:
+rgbp = reur.l1 + rgbp.l1 + rjpy.l1 + reur.l2 + rgbp.l2 + rjpy.l2 + const 
+
+     reur.l1      rgbp.l1      rjpy.l1      reur.l2      rgbp.l2      rjpy.l2        const 
+-0.025270542  0.221361804 -0.039016040  0.046926637 -0.067794083  0.003286917  0.002825689 
+
+
+Estimated coefficients for equation rjpy: 
+========================================= 
+Call:
+rjpy = reur.l1 + rgbp.l1 + rjpy.l1 + reur.l2 + rgbp.l2 + rjpy.l2 + const 
+
+      reur.l1       rgbp.l1       rjpy.l1       reur.l2       rgbp.l2       rjpy.l2         const 
+ 0.0410612623 -0.0708456993  0.1324572148 -0.0188915075  0.0249075437  0.0149565492 -0.0004125908 
+
+
+> VARselect(currencies[c("reur","rgbp","rjpy")], lag.max = 10)
+$selection
+AIC(n)  HQ(n)  SC(n) FPE(n) 
+     4      2      1      4 
+
+$criteria
+                  1           2            3            4            5            6            7
+AIC(n) -5.433453428 -5.43726462 -5.437666647 -5.438909241 -5.438464346 -5.437389700 -5.436794113
+HQ(n)  -5.429472196 -5.43029747 -5.427713567 -5.425970237 -5.422539418 -5.418478849 -5.414897337
+SC(n)  -5.421888924 -5.41702674 -5.408755386 -5.401324601 -5.392206329 -5.382458304 -5.373189339
+FPE(n)  0.004367985  0.00435137  0.004349621  0.004344219  0.004346152  0.004350826  0.004353418
+                  8            9           10
+AIC(n) -5.435808057 -5.435335655 -5.433668221
+HQ(n)  -5.410925357 -5.407467031 -5.402813673
+SC(n)  -5.363529904 -5.354384124 -5.344043311
+FPE(n)  0.004357713  0.004359772  0.004367048
+
+> 
+> var = VAR(currencies[c("reur","rgbp","rjpy")],p = 1)
+> 
+> grangertest(reur ~ rgbp, data = currencies)
+Granger causality test
+
+Model 1: reur ~ Lags(reur, 1:1) + Lags(rgbp, 1:1)
+Model 2: reur ~ Lags(reur, 1:1)
+  Res.Df Df      F Pr(>F)
+1   7137                 
+2   7138 -1 0.9912 0.3195
+> grangertest(reur ~ rjpy, data = currencies)
+Granger causality test
+
+Model 1: reur ~ Lags(reur, 1:1) + Lags(rjpy, 1:1)
+Model 2: reur ~ Lags(reur, 1:1)
+  Res.Df Df      F Pr(>F)
+1   7137                 
+2   7138 -1 0.4202 0.5169
+> causality(var,cause = c("rgbp","rjpy"))$Granger
+
+	Granger causality H0: rgbp rjpy do not Granger-cause reur
+
+data:  VAR object var
+F-Test = 0.72376, df1 = 2, df2 = 21408, p-value = 0.4849
+
+> 
+> grangertest(rgbp ~ reur, data = currencies)
+Granger causality test
+
+Model 1: rgbp ~ Lags(rgbp, 1:1) + Lags(reur, 1:1)
+Model 2: rgbp ~ Lags(rgbp, 1:1)
+  Res.Df Df      F  Pr(>F)  
+1   7137                    
+2   7138 -1 3.8834 0.04881 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> grangertest(rgbp ~ rjpy, data = currencies)
+Granger causality test
+
+Model 1: rgbp ~ Lags(rgbp, 1:1) + Lags(rjpy, 1:1)
+Model 2: rgbp ~ Lags(rgbp, 1:1)
+  Res.Df Df      F    Pr(>F)    
+1   7137                        
+2   7138 -1 14.096 0.0001751 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> causality(var,cause = c("reur","rjpy"))$Granger
+
+	Granger causality H0: reur rjpy do not Granger-cause rgbp
+
+data:  VAR object var
+F-Test = 7.7007, df1 = 2, df2 = 21408, p-value = 0.0004537
+
+> 
+> grangertest(rjpy ~ reur, data = currencies)
+Granger causality test
+
+Model 1: rjpy ~ Lags(rjpy, 1:1) + Lags(reur, 1:1)
+Model 2: rjpy ~ Lags(rjpy, 1:1)
+  Res.Df Df     F Pr(>F)
+1   7137                
+2   7138 -1 5e-04 0.9815
+> grangertest(rjpy ~ rgbp, data = currencies)
+Granger causality test
+
+Model 1: rjpy ~ Lags(rjpy, 1:1) + Lags(rgbp, 1:1)
+Model 2: rjpy ~ Lags(rjpy, 1:1)
+  Res.Df Df    F  Pr(>F)   
+1   7137                   
+2   7138 -1 9.69 0.00186 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> causality(var,cause = c("reur","rgbp"))$Granger
+
+	Granger causality H0: reur rgbp do not Granger-cause rjpy
+
+data:  VAR object var
+F-Test = 7.7511, df1 = 2, df2 = 21408, p-value = 0.0004315
+
+> View(var)
+> par(cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
+> ir = irf(var,n.ahead = 20)
+> plot(ir)
+Esperando para confirmar mudança de página...
+Esperando para confirmar mudança de página...
+> vd = fevd(var,n.ahead = 20)
+> plot(vd)
+> var_reverse = VAR(currencies[c("rjpy","rgbp","reur")],p = 1)
+> vd_reverse = fevd(var_reverse,n.ahead = 20)
+> plot(vd_reverse)
